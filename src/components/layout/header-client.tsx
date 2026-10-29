@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { isLocale, localeMeta, localePath, locales, type Locale } from "@/i18n/config";
 import { ChevronIcon, CloseIcon, GlobeIcon, MenuIcon, TextSizeIcon } from "@/components/icons";
@@ -111,8 +112,10 @@ export function MobileMenu({
         <MenuIcon className="size-6" />
         {labels.menu}
       </button>
-      {open && (
-        <div id="mobile-menu" role="dialog" aria-modal="true" aria-label={labels.menu} className="fixed inset-0 z-[60] flex flex-col bg-paper">
+      {/* Portalled: the header's backdrop-filter would otherwise be the containing block of this fixed overlay. */}
+      {open &&
+        createPortal(
+          <div id="mobile-menu" role="dialog" aria-modal="true" aria-label={labels.menu} className="fixed inset-0 z-[60] flex flex-col bg-paper">
           <div className="wrap flex h-[var(--header-h)] items-center justify-end border-b border-line">
             <button
               type="button"
@@ -139,8 +142,9 @@ export function MobileMenu({
               ))}
             </ul>
           </nav>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

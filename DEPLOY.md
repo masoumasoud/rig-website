@@ -1,17 +1,21 @@
-# Deployment Guide: Rezaei Industrial Group Website
+<div dir="rtl" align="right">
 
-Architecture: **foreign VPS** (Ubuntu 24.04, at least 2GB RAM) behind **ArvanCloud CDN**.
-Everything runs on a single server: the Next.js site (PM2) + Caddy (HTTPS) + Stalwart (mail). Every service is free.
+# راهنمای استقرار: وب‌سایت گروه صنعتی رضایی
 
+معماری: یک **سرور مجازی خارج از ایران** (اوبونتو ۲۴٫۰۴، دست‌کم ۲ گیگابایت رم) پشت **CDN آروان‌کلود**.
+همه‌چیز روی یک سرور اجرا می‌شود: سایت Next.js (با PM2)، Caddy (برای HTTPS) و Stalwart (ایمیل). همهٔ سرویس‌ها رایگان‌اند.
+
+```text
+بازدیدکننده ─► آروان‌کلود (CDN، محافظت DDoS، کش لبه) ─► Caddy :443 ─► Next.js :3000
+ایمیل مشتری ─► MX: mail.دامنه ─► Stalwart :25 ──IMAP──► صندوق پیام پنل
+پاسخ از پنل ─► Brevo SMTP (رایگان، ۳۰۰ ایمیل در روز) ─► صندوق مشتری
 ```
-Visitor ──► ArvanCloud (CDN, DDoS protection, edge cache) ──► Caddy :443 ──► Next.js :3000
-Customer email ──► MX: mail.domain ──► Stalwart :25 ──IMAP──► panel inbox
-Reply from panel ──► Brevo SMTP (free, 300/day) ──► customer's inbox
-```
+
+در دستورها، `دامنه` را با دامنهٔ واقعی (مثل `example.ir`) و `<آدرس-مخزن>` را با آدرس مخزن گیت عوض کنید.
 
 ---
 
-## 1) Server preparation
+## ۱) آماده‌سازی سرور
 
 ```bash
 apt update && apt install -y git sqlite3 curl debian-keyring debian-archive-keyring apt-transport-https
@@ -22,114 +26,129 @@ npm i -g pm2
 curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/gpg.key | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt > /etc/apt/sources.list.d/caddy-stable.list
 apt update && apt install -y caddy
-# Docker (for the mail server)
+# Docker (برای سرور ایمیل)
 curl -fsSL https://get.docker.com | sh
 ```
 
-## 2) Installing the site
+## ۲) نصب سایت
 
 ```bash
 mkdir -p /srv/rig && cd /srv/rig
-git clone <repo-address> app && cd app
-cp .env.example .env && nano .env      # fill in the values (section 6)
+git clone <آدرس-مخزن> app && cd app
+cp .env.example .env && nano .env      # مقدارها را پر کنید (بخش ۶)
 ./deploy/deploy.sh
-pm2 startup                            # auto-start after reboot
+pm2 startup                            # اجرای خودکار بعد از ریبوت
 ```
 
-Every later update: `cd /srv/rig/app && git pull && ./deploy/deploy.sh`
+برای هر به‌روزرسانی بعدی: `cd /srv/rig/app && git pull && ./deploy/deploy.sh`
 
-## 3) Caddy
+## ۳) Caddy
 
 ```bash
 cp deploy/Caddyfile /etc/caddy/Caddyfile
-nano /etc/caddy/Caddyfile   # replace example.com with the real domain + paste Arvan IP ranges
+nano /etc/caddy/Caddyfile   # example.com را با دامنهٔ واقعی عوض کنید و رنج IPهای آروان را بگذارید
 systemctl reload caddy
 ```
 
-## 4) ArvanCloud settings
+> در فایل، به‌جای `ARVAN_RANGES_HERE` باید فهرست رسمی IPهای آروان‌کلود را از پنل یا مستندات خودش کپی کنید. این فهرست را عمداً حدسی نگذاشته‌ام.
 
-**DNS** (move the domain's nameservers to Arvan):
+## ۴) تنظیمات آروان‌کلود
 
-| Type | Name | Value | Cloud (CDN) |
+**DNS** (نیم‌سرورهای دامنه را به آروان منتقل کنید):
+
+| نوع | نام | مقدار | ابر (CDN) |
 |---|---|---|---|
-| A | `@` | server IP | ✅ on |
-| A | `www` | server IP | ✅ on |
-| A | `mail` | server IP | ❌ **off** (mail can't pass through the CDN) |
-| MX | `@` | `mail.domain` priority 10 | — |
+| A | `@` | IP سرور | ✅ روشن |
+| A | `www` | IP سرور | ✅ روشن |
+| A | `mail` | IP سرور | ❌ **خاموش** (ایمیل از CDN رد نمی‌شود) |
+| MX | `@` | `mail.دامنه` با اولویت ۱۰ | — |
 | TXT | `@` | `v=spf1 include:spf.brevo.com mx ~all` | — |
-| TXT | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:info@domain` | — |
-| TXT/CNAME | DKIM | the values Brevo gives you (section 5) | — |
+| TXT | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:info@دامنه` | — |
+| TXT/CNAME | DKIM | مقدارهایی که Brevo می‌دهد (بخش ۵) | — |
 
-**SSL:** HTTPS enabled, mode **Full (strict)**, HSTS on. If Caddy can't get a certificate behind Arvan, put Arvan's origin certificate on Caddy.
+**SSL:** HTTPS را روشن کنید، حالت **Full (strict)** و HSTS روشن. اگر Caddy پشت آروان نتوانست گواهی بگیرد، گواهی مبدأ (origin certificate) آروان را روی Caddy بگذارید.
 
-**Caching** (Arvan → Caching):
-- Cache mode: **"Respect origin headers"**. The site itself sends the right headers: static files and images get a one-year cache, while HTML pages are rendered by the Next.js cache and updated instantly by every panel change.
-- Don't strip query strings from the cache key (Next.js uses the `_rsc` parameter).
-- Don't cache `/admin` and `/api` (they already send no-store; for extra safety, add a bypass rule).
+**کش** (آروان ← کش):
 
-**Firewall:** on the server, allow ports 80/443 only from Arvan's IP ranges, so the server's real IP isn't exposed:
+- حالت کش: **«احترام به هدرهای مبدأ»**. خود سایت هدرهای درست می‌فرستد: فایل‌های ثابت و تصاویر یک سال کش می‌شوند، ولی صفحه‌های HTML را کش Next.js نگه می‌دارد و با هر تغییر در پنل فوراً به‌روز می‌شوند.
+- رشتهٔ پرس‌وجو (query string) را از کلید کش حذف نکنید (Next.js از پارامتر `_rsc` استفاده می‌کند).
+- مسیرهای `/admin` و `/api` را کش نکنید (خودشان `no-store` می‌فرستند؛ برای اطمینان یک قانون عبور (bypass) هم اضافه کنید).
+
+**فایروال:** روی سرور، پورت‌های ۸۰ و ۴۴۳ را فقط برای رنج IPهای آروان باز کنید تا IP واقعی سرور فاش نشود:
+
 ```bash
 ufw allow 22,25,465,993/tcp
 for ip in $(curl -s https://www.arvancloud.ir/fa/ips.txt); do ufw allow from $ip to any port 80,443 proto tcp; done
 ufw enable
 ```
 
-## 5) Email on the site's domain (free)
+## ۵) ایمیل روی دامنهٔ خودتان (رایگان)
 
-**a) Receiving: Stalwart on the server**
+**الف) دریافت: Stalwart روی سرور**
+
 ```bash
 mkdir -p /srv/rig/mail
 docker compose -f deploy/docker-compose.mail.yml up -d
-docker logs stalwart   # the initial admin password is printed here
+docker logs stalwart   # رمز اولیهٔ مدیر اینجا چاپ می‌شود
 ```
-- From `https://mail.domain`, add the domain and create the mailbox `info@domain`.
-- In Stalwart settings, set **outgoing relay** to Brevo too (so the phone mail app sends through the same channel).
-- Make sure your VPS provider has **incoming** port 25 open (it usually is; outgoing 25 isn't needed).
 
-**b) Sending: Brevo (free, 300 emails a day)**
-1. Create an account at brevo.com → Senders & Domains → add the domain and put the given DKIM/DMARC records in Arvan DNS.
-2. SMTP & API → build an SMTP key → put it in `.env`:
-   `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_USER=<brevo login>`, `SMTP_PASS=<SMTP key>`, `MAIL_FROM=info@domain`
+- از آدرس `https://mail.دامنه` دامنه را اضافه کنید و صندوق `info@دامنه` را بسازید.
+- در تنظیمات Stalwart، **رلهٔ خروجی** را هم روی Brevo بگذارید (تا برنامهٔ ایمیل گوشی هم از همان مسیر بفرستد).
+- مطمئن شوید ارائه‌دهندهٔ سرور شما پورت **ورودی** ۲۵ را باز گذاشته است (معمولاً باز است؛ پورت خروجی ۲۵ لازم نیست).
+- ایمیج `stalwartlabs/stalwart:latest` است. برای پایداری، نسخهٔ مشخصی را در `deploy/docker-compose.mail.yml` ثابت کنید.
 
-**c) Linking to the panel:** in `.env`:
-`IMAP_HOST=127.0.0.1`, `IMAP_USER=info@domain`, `IMAP_PASS=<mailbox password>`, then `pm2 reload rig`.
+**ب) ارسال: Brevo (رایگان، ۳۰۰ ایمیل در روز)**
 
-Result:
-- The quote form → appears in the panel's "Messages" + automatic confirmation email to the customer + notification to Gmail (and Bale if set up).
-- Reply from the panel → reaches the customer from `info@domain`; the customer's reply comes back into the same conversation in the panel.
-- Emails customers send directly to `info@domain` also show up in the panel.
-- If needed, `info@domain` can be added to the phone's mail app (IMAP 993 / SMTP 465).
+1. در brevo.com حساب بسازید ← بخش Senders & Domains ← دامنه را اضافه کنید و رکوردهای DKIM و DMARC داده‌شده را در DNS آروان بگذارید.
+2. بخش SMTP & API ← یک کلید SMTP بسازید ← در `.env` بگذارید:
+   `SMTP_HOST=smtp-relay.brevo.com`، `SMTP_USER=<ورود Brevo>`، `SMTP_PASS=<کلید SMTP>`، `MAIL_FROM=info@دامنه`
 
-## 6) Main `.env` values
+**ج) اتصال به پنل:** در `.env`:
+`IMAP_HOST=127.0.0.1`، `IMAP_USER=info@دامنه`، `IMAP_PASS=<رمز صندوق>` و سپس `pm2 reload rig`.
 
-| Variable | Description |
+نتیجه:
+
+- فرم استعلام ← در «پیام‌ها»ی پنل می‌نشیند + ایمیل تأیید خودکار به مشتری + اعلان به Gmail (و بله، اگر تنظیم شده باشد).
+- پاسخ از پنل ← از `info@دامنه` به مشتری می‌رسد؛ جواب مشتری به همان گفتگو در پنل برمی‌گردد.
+- ایمیل‌هایی که مشتری مستقیم به `info@دامنه` بفرستد هم در پنل دیده می‌شوند.
+- در صورت نیاز می‌شود `info@دامنه` را در برنامهٔ ایمیل گوشی هم اضافه کرد (IMAP روی پورت ۹۹۳ و SMTP روی ۴۶۵).
+
+## ۶) مقدارهای اصلی `.env`
+
+| متغیر | توضیح |
 |---|---|
-| `SITE_URL` | `https://domain` with no trailing slash; canonical, hreflang and sitemap all come from it |
-| `APP_SECRET` | random 40-character string: `openssl rand -hex 20` |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | first panel user (change the password after first login) |
-| `INDEXNOW_KEY` | random 32-character string for fast indexing in Bing: `openssl rand -hex 16` |
-| SMTP / IMAP | section 5 |
+| `SITE_URL` | `https://دامنه` بدون `/` پایانی؛ canonical، hreflang و sitemap همه از آن ساخته می‌شوند |
+| `APP_SECRET` | رشتهٔ تصادفی ۴۰ نویسه‌ای: `openssl rand -hex 20` |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | اولین کاربر پنل (رمز را بعد از اولین ورود عوض کنید) |
+| `INDEXNOW_KEY` | رشتهٔ تصادفی ۳۲ نویسه‌ای برای ایندکس سریع در بینگ: `openssl rand -hex 16` |
+| SMTP / IMAP | بخش ۵ |
 
-## 7) SEO and analytics setup (all from the panel → Site settings)
+## ۷) سئو و آنالیتیکس (همه از پنل ← تنظیمات سایت)
 
-1. **Google Tag Manager:** build a container, enter the `GTM-…` ID. Inside GTM, add the GA4 tag and these events as conversions:
-   `quote_submit`, `click_call`, `click_whatsapp`, `click_telegram`, `click_email`, `file_upload`
-2. **Microsoft Clarity:** build a project, enter its ID.
-3. **Google Search Console:** add a URL-prefix property → the HTML tag method → put the `content` value in the panel. Then submit `https://domain/sitemap.xml`.
-4. **Bing Webmaster:** you can import from Search Console, or put the `msvalidate.01` code in the panel. Submit the sitemap.
-5. **Google Business Profile:** definitely build a profile for the workshop with the exact same name, address and phone as the site (very effective for local searches like "CNC turning Karaj"). Put the workshop's exact lat/lng in Site settings.
+1. **Google Tag Manager:** یک کانتینر بسازید و شناسهٔ `GTM-…` را وارد کنید. داخل GTM تگ GA4 را اضافه کنید و این رویدادها را به‌عنوان تبدیل (conversion) تعریف کنید:
+   `quote_submit`، `click_call`، `click_whatsapp`، `click_telegram`، `click_email`، `file_upload`
+2. **Microsoft Clarity:** یک پروژه بسازید و شناسه‌اش را وارد کنید.
+3. **Google Search Console:** یک ویژگی «پیشوند آدرس» اضافه کنید ← روش «تگ HTML» ← مقدار `content` را در پنل بگذارید. بعد `https://دامنه/sitemap.xml` را ثبت کنید.
+4. **Bing Webmaster:** می‌توانید از Search Console وارد کنید یا کد `msvalidate.01` را در پنل بگذارید. sitemap را ثبت کنید.
+5. **Google Business Profile:** حتماً برای کارگاه یک پروفایل با **همان نام، نشانی و تلفن** سایت بسازید (برای جست‌وجوهای محلی مثل «تراشکاری CNC کرج» بسیار مؤثر است). طول و عرض جغرافیایی دقیق کارگاه را در تنظیمات سایت بگذارید.
 
-## 8) Backups
+## ۸) پشتیبان‌گیری
 
 ```bash
 crontab -e
 30 3 * * * /srv/rig/app/deploy/backup.sh
 ```
-The database, images, and mail are kept for 14 days in `/srv/rig/backups`. Occasionally copy a backup somewhere else as well.
 
-## Final checklist after launch
-- [ ] `https://domain/robots.txt`, `/sitemap.xml`, and `/llms.txt` open
-- [ ] Every page type tested in [Rich Results Test](https://search.google.com/test/rich-results)
-- [ ] A test form submission → shows up in the panel + email arrives
-- [ ] Panel reply → reaches the customer's inbox (not spam); check with mail-tester.com (score ≥ 9)
-- [ ] PageSpeed Insights on mobile for the home page
+پایگاه داده، تصاویر و ایمیل‌ها ۱۴ روز در `/srv/rig/backups` نگهداری می‌شوند. گاهی یک نسخه را جای دیگری هم کپی کنید.
+
+---
+
+## فهرست بررسی پس از انتشار
+
+- [ ] `https://دامنه/robots.txt`، `/sitemap.xml` و `/llms.txt` باز می‌شوند
+- [ ] هر نوع صفحه در [Rich Results Test](https://search.google.com/test/rich-results) آزمایش شد
+- [ ] یک استعلام آزمایشی ← در پنل دیده می‌شود + ایمیل می‌رسد
+- [ ] پاسخ از پنل ← به صندوق مشتری می‌رسد (نه اسپم)؛ با mail-tester.com بررسی شود (امتیاز ۹ یا بالاتر)
+- [ ] PageSpeed Insights برای موبایل صفحهٔ اصلی
+
+</div>
