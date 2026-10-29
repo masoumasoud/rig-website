@@ -120,7 +120,7 @@ export function Analytics({ gtmId, ga4Id, clarityId, needsConsent, labels }: Pro
     <div
       role="dialog"
       aria-label={labels.text}
-      className="card fixed inset-x-3 bottom-[calc(92px+env(safe-area-inset-bottom))] z-50 mx-auto max-w-xl p-4 md:bottom-4"
+      className="card fixed inset-x-3 bottom-[calc(88px+env(safe-area-inset-bottom))] z-50 mx-auto max-w-xl p-4 md:bottom-4"
     >
       <p className="mb-3">{labels.text}</p>
       <div className="flex gap-2">

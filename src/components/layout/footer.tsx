@@ -101,6 +101,8 @@ export async function Footer() {
           © {num(year, locale)} {name}. {t.footer.rights}
         </p>
       </div>
+      {/* Room for the fixed mobile dock, kept inside the footer so its dark background reaches the bottom edge. */}
+      <div aria-hidden="true" className="h-[calc(84px+max(0px,env(safe-area-inset-bottom)-0.25rem))] md:hidden" />
     </footer>
   );
 }

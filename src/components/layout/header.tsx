@@ -25,7 +25,7 @@ export async function Header() {
   const name = pick(settings.company.name, locale) ?? t.brand;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/85">
+    <header className="relative z-50 border-b border-line bg-paper lg:sticky lg:top-0 lg:bg-paper/95 lg:backdrop-blur lg:supports-[backdrop-filter]:bg-paper/85">
       <div className="wrap flex h-[var(--header-h)] items-center gap-3">
         <Link href={localePath(locale, "/")} className="flex items-center gap-3 me-auto" aria-label={name}>
           <LogoMark className="size-11 flex-none text-ink" />

@@ -368,11 +368,9 @@ html.js:not([data-motion="none"]) .draw.in-view :is(path, line, circle, rect, po
   }
 }
 
-/* Mobile action bar leaves space at the bottom of the page. */
-@media (max-width: 767px) {
-  body {
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
-  }
+/* With viewport-fit=cover (needed for safe-area insets in in-app browsers) keep content out of the notch in landscape. */
+body {
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
 }
 
 /* Hero drill flutes scroll to suggest rotation. */
