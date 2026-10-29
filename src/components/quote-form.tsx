@@ -1,5 +1,6 @@
 "use client";
 
+import { demoNotice, isDemo } from "@/lib/demo";
 import { useRef, useState, useSyncExternalStore } from "react";
 import type { Dictionary } from "@/i18n/dictionaries/fa";
 import type { Locale } from "@/i18n/config";
@@ -51,6 +52,7 @@ export function QuoteForm({ locale, t, services }: Props) {
   const service = chosen ?? fromUrl;
 
   const startCaptcha = () => {
+    if (isDemo) return;
     captcha.current ??= solveCaptcha().catch((e) => {
       captcha.current = null;
       throw e;
@@ -97,6 +99,11 @@ export function QuoteForm({ locale, t, services }: Props) {
     ev.preventDefault();
     if (step === 1) return goStep2();
     if (!validateStep2()) return;
+    if (isDemo) {
+      setStatus("error");
+      setMessage(demoNotice[locale]);
+      return;
+    }
     setStatus("sending");
     setMessage("");
     try {

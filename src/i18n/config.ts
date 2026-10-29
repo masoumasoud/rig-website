@@ -21,10 +21,11 @@ export const consentLocales: Locale[] = ["de", "nl"];
 
 export const isLocale = (v: string): v is Locale => (locales as readonly string[]).includes(v);
 
-/** Public URL path for a locale. The default locale has no prefix. */
+/** Public URL path for a locale. The default locale has no prefix (except in the static demo). */
 export function localePath(locale: Locale, path = "/"): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
-  if (locale === defaultLocale) return clean;
+  // The static demo has no proxy to rewrite `/x` to `/fa/x`, so Persian keeps its prefix there.
+  if (locale === defaultLocale && process.env.NEXT_PUBLIC_DEMO !== "1") return clean;
   return clean === "/" ? `/${locale}` : `/${locale}${clean}`;
 }
 

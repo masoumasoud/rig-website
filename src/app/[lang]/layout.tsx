@@ -3,6 +3,7 @@ import { consentLocales, localeMeta, locales, pick } from "@/i18n/config";
 import { getI18n } from "@/i18n/dictionary";
 import { getServices, getSettings } from "@/lib/content";
 import { siteUrl } from "@/lib/seo";
+import { isDemo } from "@/lib/demo";
 import { graph, organizationLd, websiteLd } from "@/lib/structured-data";
 import { JsonLd } from "@/components/json-ld";
 import { Header } from "@/components/layout/header";
@@ -33,6 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: pick(s.company.name, locale) ?? t.brand,
     title: { default: t.brand, template: `%s | ${t.brand}` },
     formatDetection: { telephone: false, address: false, email: false },
+    robots: isDemo ? { index: false, follow: false } : undefined,
     verification: {
       google: v.google || undefined,
       yandex: v.yandex || undefined,
