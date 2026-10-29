@@ -1,0 +1,15 @@
+# Stalwart: free, open-source mail server for info@<domain> (SMTP in + IMAP).
+# Outgoing mail is relayed through Brevo (see DEPLOY.md), so port 25 outbound is not needed.
+services:
+  stalwart:
+    # Pin to the exact version you install (docker image ls) once it is running.
+    image: stalwartlabs/stalwart:latest
+    container_name: stalwart
+    restart: unless-stopped
+    ports:
+      - "25:25"     # incoming mail from the internet
+      - "465:465"   # SMTPS for phone/desktop mail apps
+      - "993:993"   # IMAPS for the site worker and mail apps
+      - "127.0.0.1:8080:8080" # web admin, proxied by Caddy at mail.<domain>
+    volumes:
+      - /srv/rig/mail:/opt/stalwart

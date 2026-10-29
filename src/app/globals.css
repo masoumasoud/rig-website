@@ -1,0 +1,445 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ tokens -- */
+:root {
+  --paper: #f6f5f1;
+  --paper-2: #ecebe5;
+  --card: #ffffff;
+  --ink: #111214;
+  --ink-2: #33363b; /* 11.6:1 on paper */
+  --ink-3: #555a61; /* 6.6:1 on paper, secondary text only */
+  --line: #d4d1c7;
+  --steel: #8b919a;
+  --accent: #f26a1b; /* safety orange; ink text on it is 6.1:1 */
+  --accent-ink: #a23d05; /* orange text on paper, 6.0:1 */
+  --blueprint: #13304a;
+  --blueprint-2: #1b4466;
+  --blueprint-line: #5f8fb8;
+  --ok: #17703f;
+  --danger: #b42318;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgb(17 18 20 / 0.06), 0 8px 24px -12px rgb(17 18 20 / 0.18);
+  --header-h: 72px;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-steel: var(--steel);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-blueprint: var(--blueprint);
+  --color-blueprint-2: var(--blueprint-2);
+  --color-blueprint-line: var(--blueprint-line);
+  --color-ok: var(--ok);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-main);
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius-card: var(--radius);
+  --shadow-card: var(--shadow);
+}
+
+/* ------------------------------------------------------------------- base -- */
+html {
+  /* 18px base for older readers; A+ toggle bumps to 21px. */
+  font-size: 112.5%;
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+html[data-text="lg"] {
+  font-size: 131.25%;
+}
+
+body {
+  /* Guards against stray RTL off-screen elements (sr-only, honeypot) causing sideways scroll. */
+  overflow-x: clip;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-main);
+  line-height: 1.75;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+:root[dir="rtl"] body {
+  line-height: 1.95;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.35;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+:root[dir="rtl"] :is(h1, h2, h3, h4) {
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* Latin digits & codes keep LTR inside RTL text. */
+.ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+/* -------------------------------------------------------------- components -- */
+@layer components {
+  .wrap {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+  @media (min-width: 640px) {
+    .wrap {
+      padding-inline: 24px;
+    }
+  }
+
+  .section {
+    padding-block: clamp(56px, 9vw, 112px);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent-ink);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .h-section {
+    font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.4rem);
+  }
+  .lead {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.2rem);
+    color: var(--ink-2);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55em;
+    min-height: 52px;
+    padding: 0.7em 1.4em;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.2;
+    text-decoration: none;
+    border: 2px solid transparent;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s,
+      transform 0.2s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn svg {
+    width: 1.3em;
+    height: 1.3em;
+    flex: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--ink);
+  }
+  .btn-primary:hover {
+    background: #ff7a2a;
+  }
+  .btn-dark {
+    background: var(--ink);
+    color: #fff;
+  }
+  .btn-dark:hover {
+    background: #2a2c30;
+  }
+  .btn-outline {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: transparent;
+  }
+  .btn-outline:hover {
+    background: var(--ink);
+    color: #fff;
+  }
+  .btn-light {
+    background: #fff;
+    color: var(--ink);
+  }
+  .btn-whatsapp {
+    background: #1f8f4e;
+    color: #fff;
+  }
+  .btn-whatsapp:hover {
+    background: #187a41;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .link {
+    color: var(--accent-ink);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 2px;
+  }
+
+  .prose-rig p {
+    margin-block: 0 1em;
+    color: var(--ink-2);
+    font-size: 1.05rem;
+  }
+  .prose-rig h2,
+  .prose-rig h3 {
+    margin-block: 1.4em 0.5em;
+  }
+  .prose-rig ul {
+    list-style: disc;
+    padding-inline-start: 1.4em;
+    margin-block: 0 1em;
+  }
+
+  /* Technical drawing paper. */
+  .blueprint {
+    background-color: var(--blueprint);
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.07) 1px, transparent 1px),
+      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    background-size:
+      80px 80px,
+      80px 80px,
+      16px 16px,
+      16px 16px;
+    color: #fff;
+  }
+  .grid-paper {
+    background-image:
+      linear-gradient(rgb(17 18 20 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(17 18 20 / 0.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Form fields: big, labelled, high contrast. */
+  .field label,
+  .field .label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.4em;
+  }
+  .input {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 54px;
+    padding: 0.7em 0.9em;
+    border: 2px solid #9a9ea5;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 1.05rem;
+  }
+  .input:focus {
+    border-color: var(--ink);
+    outline: 3px solid rgb(242 106 27 / 0.45);
+    outline-offset: 0;
+  }
+  .input[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+  textarea.input {
+    min-height: 140px;
+    resize: vertical;
+  }
+  .hint {
+    font-size: 0.88rem;
+    color: var(--ink-3);
+    margin-top: 0.35em;
+  }
+  .error {
+    font-size: 0.92rem;
+    color: var(--danger);
+    font-weight: 700;
+    margin-top: 0.35em;
+  }
+}
+
+/* ------------------------------------------------------------- motion fx -- */
+/* `data-motion` is set before paint by an inline script: none | low | high. */
+html[data-motion="none"] *,
+html[data-motion="none"] *::before,
+html[data-motion="none"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@keyframes rig-reveal {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@supports (animation-timeline: view()) {
+  html:not([data-motion="none"]) .reveal {
+    animation: rig-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+}
+
+/* SVG line drawing: paths use pathLength="1". Hidden only when JS can reveal them. */
+html.js:not([data-motion="none"]) .draw :is(path, line, circle, rect, polyline) {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.65, 0, 0.35, 1);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+html.js:not([data-motion="none"]) .in-view .draw :is(path, line, circle, rect, polyline),
+html.js:not([data-motion="none"]) .draw.in-view :is(path, line, circle, rect, polyline) {
+  stroke-dashoffset: 0;
+}
+
+@keyframes rig-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+.spin-slow {
+  animation: rig-spin 6s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes rig-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Mobile action bar leaves space at the bottom of the page. */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Hero drill flutes scroll to suggest rotation. */
+@keyframes rig-flutes {
+  from {
+    transform: translateY(-6px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.hero-flutes {
+  animation: rig-flutes 0.45s linear infinite;
+}
+html[data-motion="low"] .hero-flutes {
+  animation-duration: 0.9s;
+}
+
+/* Odometer digits roll into place when the block enters the viewport. */
+.odo {
+  display: inline-flex;
+  direction: ltr;
+  overflow: hidden;
+  height: 1em;
+  line-height: 1;
+}
+.odo-col {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--d) * -1em));
+}
+html.js:not([data-motion="none"]) .odo-col {
+  transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: calc(var(--i) * 120ms);
+}
+html.js:not([data-motion="none"]) .odo:not(.in-view) .odo-col {
+  transform: translateY(0);
+}
+
+/* Caliper jaw closes on the part. */
+.caliper-jaw {
+  transition: transform 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s;
+}
+html.js:not([data-motion="none"]) [data-io]:not(.in-view) .caliper-jaw {
+  transform: translateX(90px);
+}
+
+/* Checklist ticks appear one by one. */
+html.js:not([data-motion="none"]) [data-io] .tick {
+  opacity: 0;
+  scale: 0.4;
+  transition:
+    opacity 0.4s,
+    scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(var(--i) * 180ms + 0.3s);
+}
+html.js:not([data-motion="none"]) [data-io].in-view .tick {
+  opacity: 1;
+  scale: 1;
+}
+
+/* Micrometer thimble turns while the spindle advances. */
+@keyframes rig-thimble {
+  to {
+    transform: translateX(-14px);
+  }
+}
+html.js [data-io].in-view .thimble {
+  animation: rig-thimble 1.6s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
