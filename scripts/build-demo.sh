@@ -9,7 +9,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="$ROOT/.demo-build"
-BASE_PATH="${BASE_PATH:-/rig-website}"
+BASE_PATH="${BASE_PATH-/rig-website}"
 SITE_URL="${SITE_URL:-https://example.github.io$BASE_PATH}"
 
 rm -rf "$WORK" "$ROOT/demo-out"
