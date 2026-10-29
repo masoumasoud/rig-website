@@ -12,6 +12,8 @@
 
 <p align="center">
   <a href="https://masoumasoud.github.io/rig-website/"><b>مشاهدهٔ نسخهٔ زندهٔ نمایشی ←</b></a>
+  ·
+  <a href="https://rig-website.pages.dev/"><b>نسخهٔ Cloudflare Pages ←</b></a>
 </p>
 
 <p align="center">
@@ -435,13 +437,20 @@ scripts/setup-db.ts        مایگریشن، ریختن محتوا، ساخت �
 
 ---
 
-### ساخت نسخهٔ نمایشی (GitHub Pages)
+### ساخت نسخهٔ نمایشی (GitHub Pages و Cloudflare Pages)
 
 با هر push به شاخهٔ `main`، فایل [pages.yml](.github/workflows/pages.yml) نسخهٔ ثابت را می‌سازد و منتشر می‌کند. برای ساخت محلی:
 
 ```bash
 BASE_PATH=/rig-website SITE_URL=https://masoumasoud.github.io/rig-website ./scripts/build-demo.sh
 # خروجی در پوشهٔ demo-out
+```
+
+برای میزبانی در ریشهٔ یک دامنه (مثل Cloudflare Pages) مسیر پایه را خالی بدهید و پوشهٔ خروجی را آپلود کنید:
+
+```bash
+BASE_PATH="" SITE_URL=https://rig-website.pages.dev ./scripts/build-demo.sh
+npx wrangler pages deploy demo-out --project-name rig-website --branch main
 ```
 
 اسکریپت از یک کپی موقت پروژه بیلد می‌گیرد و پنل، API، پراکسی و کارگر ایمیل را از آن کپی حذف می‌کند، پس برنامهٔ اصلی دست نمی‌خورد. متغیر `NEXT_PUBLIC_DEMO=1` حالت ثابت را فعال می‌کند.
